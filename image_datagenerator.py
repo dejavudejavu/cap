@@ -136,7 +136,14 @@ class DirectoryDataGenerator(keras.utils.Sequence):
             # Store sample
             
             img = cv2.imread(ID)
-            img = img.astype(np.float32)
+
+            cv_img = cv2.imdecode(np.fromfile(ID, dtype=np.uint8), -1)
+            img=cv2.cvtColor(cv_img,cv2.COLOR_RGB2BGR)
+
+            try:
+                img = img.astype(np.float32)
+            except Exception:
+                print('i:{},ID:{}'.format(i,ID))
             
             if self.augmentor:
             

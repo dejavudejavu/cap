@@ -20,20 +20,23 @@ from se import squeeze_excite_block
 
 
 '''Variables'''
-batch_size = 8
+batch_size = 2
 checkpoint_freq = 5
-dataset_dir = "PATH/TO/DATASET/Aircraft"
-epochs = 200
+dataset_dir = "./data"
+epochs = 1000
 image_size = (224,224)
+# image_size = (512,512)
 lstm_units = 128
+# lstm_units = 64
 model_name = "CAP_Xception"
-nb_classes = 100
+nb_classes = 6
 optimizer = SGD(lr=0.0001, momentum=0.99, nesterov=True)
 train_dir = "{}/train".format(dataset_dir)
 val_dir = "{}/test".format(dataset_dir)
 validation_freq = 5
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
 
@@ -102,6 +105,7 @@ ROIS_resolution = 42
 ROIS_grid_size = 3
 min_grid_size = 2
 pool_size=7
+# pool_size=16
 loss_type = 'categorical_crossentropy'
 metrics = ['accuracy']
 
