@@ -66,10 +66,14 @@ class RoiPoolingConv(Layer):
             w = rois[0, roi_idx, 2]
             h = rois[0, roi_idx, 3]
             '''
-            x = self.rois[roi_idx, 0]
-            y = self.rois[roi_idx, 1]
-            w = self.rois[roi_idx, 2]
-            h = self.rois[roi_idx, 3]
+            try:
+                x = self.rois[roi_idx, 0]
+                y = self.rois[roi_idx, 1]
+                w = self.rois[roi_idx, 2]
+                h = self.rois[roi_idx, 3]
+            except Exception:
+                print()
+
             
             row_length = w / float(self.pool_size)
             col_length = h / float(self.pool_size)

@@ -39,40 +39,38 @@ os.environ["CUDA_VISIBLE_DEVICES"]="0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
-
-
 '''Model Methods'''
 #get regions of interest of an image (return all possible bounding boxes when splitting the image into a grid)
 def getROIS(resolution=33,gridSize=3, minSize=1):
-	
-	coordsList = []
-	step = resolution / gridSize # width/height of one grid square
-	
-	#go through all combinations of coordinates
-	for column1 in range(0, gridSize + 1):
-		for column2 in range(0, gridSize + 1):
-			for row1 in range(0, gridSize + 1):
-				for row2 in range(0, gridSize + 1):
-					
-					#get coordinates using grid layout
-					x0 = int(column1 * step)
-					x1 = int(column2 * step)
-					y0 = int(row1 * step)
-					y1 = int(row2 * step)
-					
-					if x1 > x0 and y1 > y0 and ((x1 - x0) >= (step * minSize) or (y1 - y0) >= (step * minSize)): #ensure ROI is valid size
-						
-						if not (x0==y0==0 and x1==y1==resolution): #ignore full image
-							
-							#calculate height and width of bounding box
-							w = x1 - x0
-							h = y1 - y0
-							
-							coordsList.append([x0, y0, w, h]) #add bounding box to list
 
-	coordsArray = np.array(coordsList)	 #format coordinates as numpy array						
+    coordsList = []
+    step = resolution / gridSize # width/height of one grid square
 
-	return coordsArray
+    #go through all combinations of coordinates
+    for column1 in range(0, gridSize + 1):
+        for column2 in range(0, gridSize + 1):
+            for row1 in range(0, gridSize + 1):
+                for row2 in range(0, gridSize + 1):
+
+                    #get coordinates using grid layout
+                    x0 = int(column1 * step)
+                    x1 = int(column2 * step)
+                    y0 = int(row1 * step)
+                    y1 = int(row2 * step)
+
+                    if x1 > x0 and y1 > y0 and ((x1 - x0) >= (step * minSize) or (y1 - y0) >= (step * minSize)): #ensure ROI is valid size
+
+                        if not (x0==y0==0 and x1==y1==resolution): #ignore full image
+
+                            #calculate height and width of bounding box
+                            w = x1 - x0
+                            h = y1 - y0
+
+                            coordsList.append([x0, y0, w, h]) #add bounding box to list
+
+    coordsArray = np.array(coordsList)	 #format coordinates as numpy array
+
+    return coordsArray
 
 def crop(dimension, start, end): #https://github.com/keras-team/keras/issues/890
     #Use this layer for a model that has individual roi bounding box
@@ -97,7 +95,7 @@ def squeezefunc(x):
 
 '''This is to convert stacked tensor to sequence for LSTM'''
 def stackfunc(x):
-    return K.stack(x, axis=1) 
+    return K.stack(x, axis=1)
 
 
 '''Model Constants'''
@@ -112,6 +110,8 @@ metrics = ['accuracy']
 
 '''Model Construction'''
 base_model = Xception(weights='imagenet', input_tensor=layers.Input(shape=(image_size[0],image_size[1],3)), include_top=False)
+
+
 
 #last convolution layer
 base_out = base_model.output
@@ -150,7 +150,7 @@ x = layers.Reshape((feat_dim,))(x_final)
 jcvs.append(x)
 
 jcvs = layers.Lambda(stackfunc, name='lambda_stack')(jcvs)
-x = SeqSelfAttention(units=32, attention_activation='sigmoid', name='Attention')(jcvs) 
+x = SeqSelfAttention(units=32, attention_activation='sigmoid', name='Attention')(jcvs)
 
 x = layers.TimeDistributed(layers.Reshape((pool_size,pool_size, base_channels)))(x)
 
@@ -162,8 +162,21 @@ y = NetRVLAD(feature_size=128, max_samples=num_rois+1, cluster_size=32, output_d
 y = layers.BatchNormalization(name='batch_norm_last')(y)
 y = layers.Activation('softmax', name='final_softmax')(y)
 
-model = Model(base_model.input, y)
-model.compile(loss="categorical_crossentropy", metrics=['accuracy'], optimizer=optimizer)
+
+
+# model = Model(base_model.input, y)
+# model.compile(loss="categorical_crossentropy", metrics=['accuracy'], optimizer=optimizer)
+
+
+model = load_model('CAP_Xception.05.h5',custom_objects={
+    'ConvSN2D':ConvSN2D,
+    'SelfAttention':SelfAttention,
+    'RoiPoolingConv':RoiPoolingConv,
+    'SeqSelfAttention':SeqSelfAttention,
+    'NetRVLAD':NetRVLAD,
+    'ROIS_resolution':ROIS_resolution
+})
+
 model.summary()
 
 

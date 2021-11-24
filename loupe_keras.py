@@ -26,7 +26,7 @@ import keras.backend as K
 class NetRVLAD(layers.Layer):
     """Creates a NetRVLAD class (Residual-less NetVLAD).
     """
-    def __init__(self, feature_size, max_samples, cluster_size, output_dim, **kwargs):
+    def __init__(self, feature_size=128, max_samples=27, cluster_size=32, output_dim=6, **kwargs):
         
         self.feature_size = feature_size
         self.max_samples = max_samples
